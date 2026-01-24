@@ -20,7 +20,8 @@ public class AuthService {
                 return null;
             }
 
-            User user = new Client(UUID.randomUUID(), password, firstName, lastName, middleInitial, email);
+            String hashedPassword = util.PasswordUtil.hashPassword(password);
+            User user = new Client(UUID.randomUUID(), hashedPassword, firstName, lastName, middleInitial, email);
             if (userDAO.create(user)) {
                 return user;
             }

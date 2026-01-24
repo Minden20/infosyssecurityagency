@@ -8,7 +8,7 @@ public class SimpleJsonParser {
      * Представляє JSON об'єкт як пари ключ-значення.
      */
     public static class JsonObject {
-        private java.util.Map<String, Object> map = new java.util.HashMap<>();
+        private final java.util.Map<String, Object> map = new java.util.HashMap<>();
 
         /**
          * Додає пару ключ-значення до об'єкта.
@@ -153,10 +153,10 @@ public class SimpleJsonParser {
                 obj.put(key, value.substring(1, value.length() - 1));
             } else if (value.matches("\\d+")) {
                 // Число
-                obj.put(key, Long.parseLong(value));
+                obj.put(key, Long.valueOf(value));
             } else if (value.equals("true") || value.equals("false")) {
                 // Булеве значення
-                obj.put(key, Boolean.parseBoolean(value));
+                obj.put(key, Boolean.valueOf(value));
             } else {
                 obj.put(key, value);
             }
@@ -181,7 +181,7 @@ public class SimpleJsonParser {
             }
             sb.append("\"").append(entry.getKey()).append("\":");
             Object value = entry.getValue();
-            if (value instanceof String) {
+            if (value instanceof String || value instanceof java.util.UUID) {
                 sb.append("\"").append(value).append("\"");
             } else {
                 sb.append(value);
