@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import user.Admin;
 import user.Client;
+import user.Guard;
 import user.User;
 import util.JsonFileHandler;
 import util.SimpleJsonParser;
@@ -77,12 +79,37 @@ public class UserDAO {
             List<JsonObject> jsonArray = SimpleJsonParser.parseArray(content);
 
             for (JsonObject jsonUser : jsonArray) {
-                Client user = new Client();
-                user.setId((UUID) jsonUser.get("id"));
+                User user;
+                String roleStr = (String) jsonUser.get("role");
+                User.Role role = User.Role.valueOf(roleStr);
+                switch (role) {
+                    case CLIENT:
+                        user = new Client();
+                        break;
+                    case ADMIN:
+                        user = new Admin();
+                        break;
+                    case GUARD:
+                        user = new Guard();
+                        break;
+                    default:
+                        throw new IOException("Невідома роль користувача: " + role);
+                }
+                Object idValue = jsonUser.get("id");
+                if (idValue != null) {
+                    UUID id;
+                    if (idValue instanceof UUID) {
+                        id = (UUID) idValue;
+                    } else {
+                        id = UUID.fromString(idValue.toString());
+                    }
+                    user.setId(id);
+                }
                 user.setFirstName((String) jsonUser.get("firstName"));
                 user.setLastName((String) jsonUser.get("lastName"));
                 user.setMiddleInitial((String) jsonUser.get("middleInitial"));
                 user.setEmail((String) jsonUser.get("email"));
+                 jsonUser.put("role", user.getRole().toString());
                 users.add(user);
             }
         } catch (Exception e) {
@@ -139,7 +166,9 @@ public class UserDAO {
         for (User user : users) {
             JsonObject jsonUser = new JsonObject();
             jsonUser.put("id", user.getId());
-            jsonUser.put("name", user.getFirstName());
+            jsonUser.put("firstName", user.getFirstName());
+            jsonUser.put("lastName", user.getLastName());
+            jsonUser.put("middleInitial", user.getMiddleInitial());
             jsonUser.put("email", user.getEmail());
             jsonArray.add(jsonUser);
         }
