@@ -16,6 +16,9 @@ public class UserDAO {
     /**
      * Шлях до JSON файлу з даними користувачів.
      */
+    /**
+     * Шлях до JSON файлу з даними користувачів.
+     */
     private static final String FILE_PATH = "data/users.json";
 
     /**
@@ -79,40 +82,33 @@ public class UserDAO {
             List<JsonObject> jsonArray = SimpleJsonParser.parseArray(content);
 
             for (JsonObject jsonUser : jsonArray) {
-                User user;
                 String roleStr = (String) jsonUser.get("role");
                 User.Role role = User.Role.valueOf(roleStr);
-                switch (role) {
-                    case CLIENT:
-                        user = new Client();
-                        break;
-                    case ADMIN:
-                        user = new Admin();
-                        break;
-                    case GUARD:
-                        user = new Guard();
-                        break;
-                    default:
-                        throw new IOException("Невідома роль користувача: " + role);
-                }
+
+                UUID id;
                 Object idValue = jsonUser.get("id");
-                if (idValue != null) {
-                    UUID id;
-                    if (idValue instanceof UUID) {
-                        id = (UUID) idValue;
-                    } else {
-                        id = UUID.fromString(idValue.toString());
-                    }
-                    user.setId(id);
+                if (idValue instanceof UUID uuid) {
+                    id = uuid;
+                } else {
+                    id = UUID.fromString(idValue.toString());
                 }
-                user.setFirstName((String) jsonUser.get("firstName"));
-                user.setLastName((String) jsonUser.get("lastName"));
-                user.setMiddleInitial((String) jsonUser.get("middleInitial"));
-                user.setEmail((String) jsonUser.get("email"));
-                 jsonUser.put("role", user.getRole().toString());
+
+                String firstName = (String) jsonUser.get("firstName");
+                String lastName = (String) jsonUser.get("lastName");
+                String middleInitial = (String) jsonUser.get("middleInitial");
+                String email = (String) jsonUser.get("email");
+                String password = (String) jsonUser.get("password");
+
+                User user;
+                switch (role) {
+                    case CLIENT -> user = new Client(id, password, firstName, lastName, middleInitial, email);
+                    case ADMIN -> user = new Admin(id, password, firstName, lastName, middleInitial, email);
+                    case GUARD -> user = new Guard(id, password, firstName, lastName, middleInitial, email);
+                    default -> throw new IOException("Невідома роль користувача: " + role);
+                }
                 users.add(user);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new IOException("Помилка парсингу JSON файлу", e);
         }
 
@@ -129,7 +125,7 @@ public class UserDAO {
     public boolean update(User user) throws IOException {
         List<User> users = findAll();
         for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).getId() == user.getId()) {
+            if (users.get(i).getId().equals(user.getId())) {
                 users.set(i, user);
                 return saveAll(users);
             }
@@ -146,7 +142,7 @@ public class UserDAO {
      */
     public boolean delete(UUID id) throws IOException {
         List<User> users = findAll();
-        boolean removed = users.removeIf(user -> user.getId() == id);
+        boolean removed = users.removeIf(user -> user.getId().equals(id));
         if (removed) {
             return saveAll(users);
         }
@@ -170,6 +166,8 @@ public class UserDAO {
             jsonUser.put("lastName", user.getLastName());
             jsonUser.put("middleInitial", user.getMiddleInitial());
             jsonUser.put("email", user.getEmail());
+            jsonUser.put("password", user.getPassword());
+            jsonUser.put("role", user.getRole().toString());
             jsonArray.add(jsonUser);
         }
 
