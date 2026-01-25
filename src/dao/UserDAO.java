@@ -1,5 +1,6 @@
 package dao;
 
+import exception.UserAlreadyExistsException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,9 +41,13 @@ public class UserDAO {
      * @param user користувач для створення
      * @return true, якщо користувач успішно створений, false - інакше
      * @throws IOException якщо виникла помилка при роботі з файлом
+     * @throws UserAlreadyExistsException 
      */
-    public boolean create(User user) throws IOException {
+    public boolean create(User user) throws IOException, UserAlreadyExistsException {
         List<User> users = findAll();
+        if (users.stream().anyMatch(u -> u.getEmail().equalsIgnoreCase(user.getEmail()))) {
+            throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists.");
+        }
         users.add(user);
         return saveAll(users);
     }
@@ -79,6 +84,9 @@ public class UserDAO {
 
         try {
             String content = fileHandler.readFile(FILE_PATH);
+            if (content.trim().isEmpty()) {
+                return users;
+            }
             List<JsonObject> jsonArray = SimpleJsonParser.parseArray(content);
 
             for (JsonObject jsonUser : jsonArray) {
@@ -131,7 +139,7 @@ public class UserDAO {
             }
         }
         return false;
-    }
+            }
 
     /**
      * Видаляє користувача за ідентифікатором.
@@ -145,9 +153,9 @@ public class UserDAO {
         boolean removed = users.removeIf(user -> user.getId().equals(id));
         if (removed) {
             return saveAll(users);
-        }
-        return false;
     }
+        return false;
+        }
 
     /**
      * Зберігає список користувачів у JSON файл.
