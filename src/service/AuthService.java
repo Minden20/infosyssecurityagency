@@ -7,7 +7,9 @@ import exception.ValidationException;
 
 import java.io.IOException;
 import java.util.UUID;
+import user.Admin;
 import user.Client;
+import user.Guard;
 import user.User;
 import util.PasswordUtil;
 import util.Validator;
@@ -20,6 +22,11 @@ public class AuthService {
     }
 
     public User registerUser(String firstName, String lastName, String middleInitial, String email, String password) 
+            throws ValidationException, UserAlreadyExistsException, IOException {
+        return createUser(firstName, lastName, middleInitial, email, password, User.Role.CLIENT);
+    }
+
+    public User createUser(String firstName, String lastName, String middleInitial, String email, String password, User.Role role)
             throws ValidationException, UserAlreadyExistsException, IOException {
             
         // Validate inputs
@@ -34,8 +41,14 @@ public class AuthService {
         }
 
         String hashedPassword = PasswordUtil.hashPassword(password);
-        // Default role is CLIENT for self-registration
-        User user = new Client(UUID.randomUUID(), hashedPassword, firstName, lastName, middleInitial, email);
+        
+        User user;
+        switch (role) {
+            case CLIENT -> user = new Client(UUID.randomUUID(), hashedPassword, firstName, lastName, middleInitial, email);
+            case ADMIN -> user = new Admin(UUID.randomUUID(), hashedPassword, firstName, lastName, middleInitial, email);
+            case GUARD -> user = new Guard(UUID.randomUUID(), hashedPassword, firstName, lastName, middleInitial, email);
+            default -> throw new ValidationException("Invalid role");
+        }
         
         userDAO.create(user);
         return user;

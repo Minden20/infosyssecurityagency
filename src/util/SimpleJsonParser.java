@@ -2,187 +2,166 @@ package util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class SimpleJsonParser {
-    /**
-     * Представляє JSON об'єкт як пари ключ-значення.
-     */
-    public static class JsonObject {
-        private final java.util.Map<String, Object> map = new java.util.HashMap<>();
 
-        /**
-         * Додає пару ключ-значення до об'єкта.
-         * 
-         * @param key ключ
-         * @param value значення
-         */
+    public static class JsonObject {
+        private final Map<String, Object> map = new HashMap<>();
+
         public void put(String key, Object value) {
             map.put(key, value);
         }
 
-        /**
-         * Отримує значення за ключем.
-         * 
-         * @param key ключ
-         * @return значення або null
-         */
         public Object get(String key) {
             return map.get(key);
         }
 
-        /**
-         * Перевіряє, чи містить об'єкт вказаний ключ.
-         * 
-         * @param key ключ
-         * @return true, якщо ключ існує, false - інакше
-         */
         public boolean containsKey(String key) {
             return map.containsKey(key);
         }
+        
+        public Map<String, Object> getMap() {
+            return map;
+        }
     }
 
-    /**
-     * Парсить JSON рядок у список об'єктів.
-     * 
-     * @param json JSON рядок
-     * @return список JSON об'єктів
-     */
     public static List<JsonObject> parseArray(String json) {
         List<JsonObject> result = new ArrayList<>();
-        if (json == null || json.trim().isEmpty()) {
-            return result;
-        }
-        
+        if (json == null || json.trim().isEmpty()) return result;
         json = json.trim();
+        if (!json.startsWith("[") || !json.endsWith("]")) return result;
         
-        if (!json.startsWith("[") || !json.endsWith("]")) {
-            return result;
+        String inner = json.substring(1, json.length() - 1).trim();
+        if (inner.isEmpty()) return result;
+
+        List<String> objectStrings = splitRespectingQuotesAndBraces(inner, ',');
+        for (String objStr : objectStrings) {
+            JsonObject obj = parseObject(objStr);
+            if (obj != null) result.add(obj);
         }
-        
-        // Видаляємо квадратні дужки
-        json = json.substring(1, json.length() - 1).trim();
-        
-        if (json.isEmpty()) {
-            return result;
-        }
-        
-        // Парсимо об'єкти з урахуванням вкладених структур
-        int braceCount = 0;
-        int start = -1;
-        
-        for (int i = 0; i < json.length(); i++) {
-            char c = json.charAt(i);
-            if (c == '{') {
-                if (braceCount == 0) {
-                    start = i;
-                }
-                braceCount++;
-            } else if (c == '}') {
-                braceCount--;
-                if (braceCount == 0 && start != -1) {
-                    String objectStr = json.substring(start, i + 1);
-                    JsonObject obj = parseObject(objectStr);
-                    if (obj != null) {
-                        result.add(obj);
-                    }
-                    start = -1;
-                }
-            }
-        }
-        
         return result;
     }
 
-    /**
-     * Парсить JSON рядок у об'єкт.
-     * 
-     * @param json JSON рядок
-     * @return JSON об'єкт або null
-     */
     public static JsonObject parseObject(String json) {
-        if (json == null || json.trim().isEmpty()) {
-            return null;
-        }
+        if (json == null) return null;
+        json = json.trim();
+        if (!json.startsWith("{") || !json.endsWith("}")) return null;
         
         JsonObject obj = new JsonObject();
-        json = json.trim();
-        
-        if (!json.startsWith("{") || !json.endsWith("}")) {
-            return null;
-        }
-        
-        // Видаляємо фігурні дужки
-        json = json.substring(1, json.length() - 1).trim();
-        
-        if (json.isEmpty()) {
-            return obj;
-        }
-        
-        // Парсимо пари ключ:значення з урахуванням вкладених структур
-        List<String> pairs = new ArrayList<>();
-        int braceCount = 0;
-        int start = 0;
-        
-        for (int i = 0; i < json.length(); i++) {
-            char c = json.charAt(i);
-            if (c == '{') {
-                braceCount++;
-            } else if (c == '}') {
-                braceCount--;
-            } else if (c == ',' && braceCount == 0) {
-                pairs.add(json.substring(start, i).trim());
-                start = i + 1;
-            }
-        }
-        if (start < json.length()) {
-            pairs.add(json.substring(start).trim());
-        }
+        String inner = json.substring(1, json.length() - 1).trim();
+        if (inner.isEmpty()) return obj;
+
+        List<String> pairs = splitRespectingQuotesAndBraces(inner, ',');
         
         for (String pair : pairs) {
-            if (pair.isEmpty()) continue;
-            
-            int colonIndex = pair.indexOf(':');
+            int colonIndex = findSeparatorRaw(pair, ':');
             if (colonIndex == -1) continue;
-            
-            String key = pair.substring(0, colonIndex).trim().replaceAll("^\"|\"$", "");
-            String value = pair.substring(colonIndex + 1).trim();
-            
-            // Обробка значень
-            if (value.startsWith("\"") && value.endsWith("\"")) {
-                // Рядок
-                obj.put(key, value.substring(1, value.length() - 1));
-            } else if (value.matches("\\d+")) {
-                // Число
-                obj.put(key, Long.valueOf(value));
-            } else if (value.equals("true") || value.equals("false")) {
-                // Булеве значення
-                obj.put(key, Boolean.valueOf(value));
-            } else {
-                obj.put(key, value);
+
+            String keyStr = pair.substring(0, colonIndex).trim();
+            String valueStr = pair.substring(colonIndex + 1).trim();
+
+            String key = unescapeString(keyStr);
+            // Remove surrounding quotes from key if unescapeString didn't
+            if (key.startsWith("\"") && key.endsWith("\"")) {
+                 key = unescapeString(key);
             }
+            
+            Object value = parseValue(valueStr);
+            obj.put(key, value);
         }
-        
         return obj;
     }
 
-    /**
-     * Конвертує об'єкт у JSON рядок.
-     * 
-     * @param obj об'єкт для конвертації
-     * @return JSON рядок
-     */
+    private static Object parseValue(String valueStr) {
+        if (valueStr == null) return null;
+        valueStr = valueStr.trim();
+        
+        if ("null".equals(valueStr)) {
+            return null;
+        }
+        if (valueStr.startsWith("\"") && valueStr.endsWith("\"")) {
+            return unescapeString(valueStr);
+        } else if (valueStr.matches("-?\\d+")) {
+            return Long.valueOf(valueStr);
+        } else if (valueStr.matches("-?\\d+\\.\\d+")) {
+            return Double.valueOf(valueStr);
+        } else if ("true".equalsIgnoreCase(valueStr) || "false".equalsIgnoreCase(valueStr)) {
+            return Boolean.valueOf(valueStr);
+        }
+        return valueStr;
+    }
+
+    private static List<String> splitRespectingQuotesAndBraces(String input, char delimiter) {
+        List<String> chunks = new ArrayList<>();
+        int braceCount = 0; // {}
+        int bracketCount = 0; // []
+        boolean inQuote = false;
+        int start = 0;
+
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            
+            if (c == '\"' && (i == 0 || input.charAt(i - 1) != '\\')) {
+                inQuote = !inQuote;
+            }
+            
+            if (!inQuote) {
+                if (c == '{') braceCount++;
+                else if (c == '}') braceCount--;
+                else if (c == '[') bracketCount++;
+                else if (c == ']') bracketCount--;
+                
+                if (braceCount == 0 && bracketCount == 0 && c == delimiter) {
+                    chunks.add(input.substring(start, i).trim());
+                    start = i + 1;
+                }
+            }
+        }
+        if (start < input.length()) {
+            chunks.add(input.substring(start).trim());
+        } else if (start == input.length() && !chunks.isEmpty()) {
+             // Trailing empty element if ends with delimiter? ignored by trim usuall
+        }
+        return chunks;
+    }
+
+    private static int findSeparatorRaw(String pair, char separator) {
+        boolean inQuote = false;
+        for (int i = 0; i < pair.length(); i++) {
+            char c = pair.charAt(i);
+            if (c == '\"' && (i == 0 || pair.charAt(i - 1) != '\\')) {
+                inQuote = !inQuote;
+            }
+            if (!inQuote && c == separator) return i;
+        }
+        return -1;
+    }
+
+    private static String unescapeString(String quoted) {
+        if (quoted == null) return null;
+        if (quoted.startsWith("\"") && quoted.endsWith("\"") && quoted.length() >= 2) {
+             quoted = quoted.substring(1, quoted.length() - 1);
+        }
+        return quoted.replace("\\\"", "\"")
+                    .replace("\\\\", "\\")
+                    .replace("\\n", "\n")
+                    .replace("\\r", "\r");
+    }
+
     public static String toJsonString(JsonObject obj) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         boolean first = true;
-        for (java.util.Map.Entry<String, Object> entry : obj.map.entrySet()) {
-            if (!first) {
-                sb.append(",");
-            }
-            sb.append("\"").append(entry.getKey()).append("\":");
+        for (Map.Entry<String, Object> entry : obj.map.entrySet()) {
+            if (!first) sb.append(",");
+            sb.append("\"").append(escapeString(entry.getKey())).append("\":");
             Object value = entry.getValue();
-            if (value instanceof String || value instanceof java.util.UUID) {
-                sb.append("\"").append(value).append("\"");
+            if (value instanceof String || value instanceof java.util.UUID || value instanceof Enum) {
+                sb.append("\"").append(escapeString(value.toString())).append("\"");
+            } else if (value == null) {
+                sb.append("null");
             } else {
                 sb.append(value);
             }
@@ -192,23 +171,22 @@ public class SimpleJsonParser {
         return sb.toString();
     }
 
-    /**
-     * Конвертує список об'єктів у JSON рядок.
-     * 
-     * @param objects список об'єктів
-     * @return JSON рядок
-     */
     public static String arrayToJsonString(List<JsonObject> objects) {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
         for (int i = 0; i < objects.size(); i++) {
-            if (i > 0) {
-                sb.append(",");
-            }
+            if (i > 0) sb.append(",");
             sb.append(toJsonString(objects.get(i)));
         }
         sb.append("]");
         return sb.toString();
     }
-}
 
+    private static String escapeString(String input) {
+        if (input == null) return "";
+        return input.replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r");
+    }
+}

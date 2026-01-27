@@ -13,7 +13,7 @@ public abstract class User {
 
     public User(UUID id, String password, String firstName, String lastName, String middleInitial, String email,
             Role role) {
-        this.id = UUID.randomUUID();
+        this.id = id != null ? id : UUID.randomUUID();
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;

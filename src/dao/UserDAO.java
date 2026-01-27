@@ -62,7 +62,7 @@ public class UserDAO {
     public User findByEmail(String email) throws IOException {
         List<User> users = findAll();
         for (User user : users) {
-            if (user.getEmail().equals(email)) {
+            if (user.getEmail().equalsIgnoreCase(email)) {
                 return user;
             }
         }
@@ -93,14 +93,20 @@ public class UserDAO {
                 String roleStr = (String) jsonUser.get("role");
                 User.Role role = User.Role.valueOf(roleStr);
 
-                UUID id;
+                UUID id = null; // Initialize id to null
                 Object idValue = jsonUser.get("id");
-                if (idValue instanceof UUID uuid) {
+                if (idValue == null) {
+                    id = null; // Will trigger random ID in constructor
+                } else if (idValue instanceof UUID uuid) {
                     id = uuid;
                 } else {
-                    id = UUID.fromString(idValue.toString());
+                    try {
+                        id = UUID.fromString(idValue.toString());
+                    } catch (IllegalArgumentException e) {
+                        id = null; // Fallback to random ID if invalid, though shouldn't happen with valid data
+                    }
                 }
-
+                
                 String firstName = (String) jsonUser.get("firstName");
                 String lastName = (String) jsonUser.get("lastName");
                 String middleInitial = (String) jsonUser.get("middleInitial");
