@@ -4,7 +4,6 @@ import dao.UserDAO;
 import exception.AuthException;
 import exception.UserAlreadyExistsException;
 import exception.ValidationException;
-
 import java.io.IOException;
 import java.util.UUID;
 import user.Admin;
@@ -29,13 +28,11 @@ public class AuthService {
     public User createUser(String firstName, String lastName, String middleInitial, String email, String password, User.Role role)
             throws ValidationException, UserAlreadyExistsException, IOException {
             
-        // Validate inputs
         Validator.validateEmail(email);
         Validator.validatePassword(password);
         if (firstName == null || firstName.trim().isEmpty()) throw new ValidationException("First name is required.");
         if (lastName == null || lastName.trim().isEmpty()) throw new ValidationException("Last name is required.");
 
-        // Check if user exists
         if (userDAO.findByEmail(email) != null) {
             throw new UserAlreadyExistsException("User with this email already exists.");
         }

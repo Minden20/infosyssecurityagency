@@ -71,9 +71,9 @@ public class MainUI {
 
         try {
             currentUser = authService.login(email, password);
-            System.out.println("\n✓ Ви успішно увійшли! Ласкаво просимо, " + currentUser.getFirstName() + "!");
+            System.out.println("\n Ви успішно увійшли! Ласкаво просимо, " + currentUser.getFirstName() + "!");
         } catch (AuthException | ValidationException | IOException e) {
-            System.out.println("\n❌ Помилка входу: " + e.getMessage());
+            System.out.println("\n Помилка входу: " + e.getMessage());
         }
     }
 
@@ -94,7 +94,7 @@ public class MainUI {
             currentUser = authService.registerUser(firstName, lastName, middleInitial, email, password);
             System.out.println("\n✓ Реєстрація успішна! Ви увійшли як клієнт.");
         } catch (ValidationException | UserAlreadyExistsException | IOException e) {
-            System.out.println("\n❌ Помилка реєстрації: " + e.getMessage());
+            System.out.println("\n Помилка реєстрації: " + e.getMessage());
         }
     }
 
@@ -123,7 +123,7 @@ public class MainUI {
             case "2" -> changePassword();
             case "3" -> handleRoleSpecificMenu();
             case "4" -> logout();
-            default -> System.out.println("\n❌ Невірний вибір. Спробуйте ще раз.");
+            default -> System.out.println("\n Невірний вибір. Спробуйте ще раз.");
         }
     }
 
@@ -147,11 +147,11 @@ public class MainUI {
         String confirmPassword = scanner.nextLine();
 
         if (!newPassword.equals(confirmPassword)) {
-            System.out.println("\n❌ Паролі не співпадають!");
+            System.out.println("\n Паролі не співпадають!");
         } else if (newPassword.length() < 6) {
-            System.out.println("\n❌ Пароль повинен містити мінімум 6 символів!");
+            System.out.println("\n Пароль повинен містити мінімум 6 символів!");
         } else {
-            System.out.println("\n✓ Пароль успішно змінений!");
+            System.out.println("\n Пароль успішно змінений!");
         }
     }
 
@@ -164,7 +164,7 @@ public class MainUI {
     }
 
     private void logout() {
-        System.out.println("\n✓ Ви вийшли з облікового запису.");
+        System.out.println("\n Ви вийшли з облікового запису.");
         currentUser = null;
     }
 

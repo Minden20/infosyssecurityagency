@@ -1,9 +1,9 @@
 package util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 public class SimpleJsonParser {
 
@@ -95,8 +95,8 @@ public class SimpleJsonParser {
 
     private static List<String> splitRespectingQuotesAndBraces(String input, char delimiter) {
         List<String> chunks = new ArrayList<>();
-        int braceCount = 0; // {}
-        int bracketCount = 0; // []
+        int braceCount = 0; 
+        int bracketCount = 0; 
         boolean inQuote = false;
         int start = 0;
 
@@ -108,10 +108,14 @@ public class SimpleJsonParser {
             }
             
             if (!inQuote) {
-                if (c == '{') braceCount++;
-                else if (c == '}') braceCount--;
-                else if (c == '[') bracketCount++;
-                else if (c == ']') bracketCount--;
+                switch (c) {
+                    case '{' -> braceCount++;
+                    case '}' -> braceCount--;
+                    case '[' -> bracketCount++;
+                    case ']' -> bracketCount--;
+                    default -> {
+                    }
+                }
                 
                 if (braceCount == 0 && bracketCount == 0 && c == delimiter) {
                     chunks.add(input.substring(start, i).trim());
@@ -122,7 +126,6 @@ public class SimpleJsonParser {
         if (start < input.length()) {
             chunks.add(input.substring(start).trim());
         } else if (start == input.length() && !chunks.isEmpty()) {
-             // Trailing empty element if ends with delimiter? ignored by trim usuall
         }
         return chunks;
     }

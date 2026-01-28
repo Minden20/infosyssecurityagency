@@ -23,7 +23,6 @@ public class MainService {
         this.protectedObjectDAO = new ProtectedObjectDAO();
     }
 
-    // --- User Management (Admin) ---
 
     public List<User> getAllUsers() throws IOException {
         return userDAO.findAll();
@@ -42,7 +41,6 @@ public class MainService {
         return false;
     }
 
-    // --- Report Management (Guard) ---
     private final dao.ReportDAO reportDAO = new dao.ReportDAO();
 
     public void createReport(User guard, String content) throws IOException {
@@ -51,14 +49,11 @@ public class MainService {
     }
 
     public List<model.Report> getGuardReports(User guard) throws IOException {
-        // In real app, filter by guard ID if needed, or return all for now per requirements (or shift reports)
-        // Let's filter by author for "My Reports" context
         return reportDAO.findAll().stream()
                 .filter(r -> r.getAuthorId().equals(guard.getId()))
                 .collect(Collectors.toList());
     }
 
-    // --- Protected Object Management ---
 
     public List<ProtectedObject> getAllProtectedObjects() throws IOException {
         return protectedObjectDAO.findAll();
@@ -70,7 +65,6 @@ public class MainService {
         return object;
     }
     
-    // --- Contract Management (Client) ---
 
     public List<Contract> getClientContracts(User client) throws IOException {
         return contractDAO.findAll().stream()
@@ -79,7 +73,6 @@ public class MainService {
     }
     
     public void requestContract(User client, ProtectedObject object) throws IOException {
-        // Create a pending contract
         Contract contract = Contract.builder()
                 .clientId(client.getId())
                 .protectedObject(object)

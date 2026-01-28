@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class Report {
     private UUID id;
-    private UUID authorId; // Guard ID
+    private UUID authorId; 
     private String content;
     private LocalDateTime createdAt;
 

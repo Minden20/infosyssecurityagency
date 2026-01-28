@@ -1,11 +1,1 @@
-[
-    {
-        "firstName": "Денис",
-        "lastName": "Міненко",
-        "password": "vx+Pv7Upc5Xvc/jtvs7Irg==:SXWq6Zyrn9ZgxJwiIWcGUrrRqPzYRpsJoa2ZLPvoyJI=",
-        "middleInitial": "",
-        "role": "ADMIN",
-        "id": "5a88ee7e-85eb-4185-be67-6c5ebeaa1038",
-        "email": "denis19harb@gmail.com"
-    }
-]
+[{"firstName":"Денис","lastName":"Міненко","password":"vx+Pv7Upc5Xvc/jtvs7Irg==:SXWq6Zyrn9ZgxJwiIWcGUrrRqPzYRpsJoa2ZLPvoyJI=","middleInitial":"","role":"ADMIN","id":"5a88ee7e-85eb-4185-be67-6c5ebeaa1038","email":"denis19harb@gmail.com"},{"firstName":"Kali","lastName":"Kali","password":"pGQZ0itHOAO1KcLDUiOYpg==:NFPuUb9F+H9cHVYSrMHU7iqpO3DHTwMdERzUBXOGaKE=","middleInitial":"","role":"GUARD","id":"1d9b76b2-a306-4f8a-9c1f-243562d0a308","email":"olimps90@gmail.com"}]

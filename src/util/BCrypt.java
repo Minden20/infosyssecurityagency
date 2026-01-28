@@ -37,7 +37,6 @@ public class BCrypt {
     }
 
     public static String gensalt(int log_rounds) {
-        // We ignore log_rounds in this PBKDF2 adapter and use constant ITERATIONS
         return gensalt();
     }
 

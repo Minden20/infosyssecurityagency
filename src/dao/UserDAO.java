@@ -93,17 +93,17 @@ public class UserDAO {
                 String roleStr = (String) jsonUser.get("role");
                 User.Role role = User.Role.valueOf(roleStr);
 
-                UUID id = null; // Initialize id to null
+                UUID id; 
                 Object idValue = jsonUser.get("id");
                 if (idValue == null) {
-                    id = null; // Will trigger random ID in constructor
+                    id = null; 
                 } else if (idValue instanceof UUID uuid) {
                     id = uuid;
                 } else {
                     try {
                         id = UUID.fromString(idValue.toString());
                     } catch (IllegalArgumentException e) {
-                        id = null; // Fallback to random ID if invalid, though shouldn't happen with valid data
+                        id = null; 
                     }
                 }
                 

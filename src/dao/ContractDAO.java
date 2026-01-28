@@ -50,15 +50,12 @@ public class ContractDAO {
             for (JsonObject jsonObj : jsonArray) {
                 UUID id = UUID.fromString((String) jsonObj.get("id"));
                 
-                // Load clientId (handle legacy data where it might be missing)
                 String clientIdStr = (String) jsonObj.get("clientId");
                 UUID clientId = clientIdStr != null ? UUID.fromString(clientIdStr) : null;
                 
-                // Load linked entities
                 UUID protectedObjectId = UUID.fromString((String) jsonObj.get("protectedObjectId"));
                 Optional<ProtectedObject> protectedObjectOpt = protectedObjectDAO.findById(protectedObjectId);
                 
-                // Load guards from semicolon separated string
                 String guardIdsStr = (String) jsonObj.get("guardIds");
                 List<Guard> guards = new ArrayList<>();
                 if (guardIdsStr != null && !guardIdsStr.isEmpty()) {
