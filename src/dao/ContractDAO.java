@@ -10,12 +10,13 @@ import java.util.stream.Collectors;
 import model.Contract;
 import model.Contract.ContractStatus;
 import model.ProtectedObject;
+import repository.ContractRepository;
 import user.Guard;
 import util.JsonFileHandler;
 import util.SimpleJsonParser;
 import util.SimpleJsonParser.JsonObject;
 
-public class ContractDAO {
+public class ContractDAO implements ContractRepository {
     private static final String FILE_PATH = "data/contracts.json";
     private final JsonFileHandler fileHandler;
     private final UserDAO userDAO;
@@ -27,11 +28,37 @@ public class ContractDAO {
         this.protectedObjectDAO = new ProtectedObjectDAO();
     }
 
+    @Override
     public boolean create(Contract contract) throws IOException {
         List<Contract> contracts = findAll();
         contracts.add(contract);
         return saveAll(contracts);
     }
+    
+
+    @Override
+    public boolean update(Contract contract) throws IOException {
+        List<Contract> contracts = findAll();
+        for (int i = 0; i < contracts.size(); i++) {
+            if (contracts.get(i).getId().equals(contract.getId())) {
+                contracts.set(i, contract);
+                return saveAll(contracts);
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean delete(UUID id) throws IOException {
+        List<Contract> contracts = findAll();
+        boolean removed = contracts.removeIf(c -> c.getId().equals(id));
+        if (removed) {
+            return saveAll(contracts);
+        }
+        return false;
+    }
+
+    @Override
 
     public List<Contract> findAll() throws IOException {
         List<Contract> contracts = new ArrayList<>();

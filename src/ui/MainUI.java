@@ -9,11 +9,12 @@ import java.util.Scanner;
 import model.Contract;
 import model.ProtectedObject;
 import service.AuthService;
+import service.AuthenticationService;
 import service.MainService;
 import user.User;
 
 public class MainUI {
-    private final AuthService authService;
+    private final AuthenticationService authService;
     private final Scanner scanner;
     private User currentUser;
 
@@ -106,11 +107,11 @@ public class MainUI {
         System.out.println("2. Змінити пароль");
         
         if (null == currentUser.getRole()) {
-            System.out.println("3. [КЛІЄНТ] Переглянути мої контракти");
+            System.out.println("3. Переглянути мої контракти");
         } else switch (currentUser.getRole()) {
-            case ADMIN -> System.out.println("3. [АДМІН] Управління користувачами");
-            case GUARD -> System.out.println("3. [ОХОРОНЕЦЬ] Переглянути захищені об'єкти");
-            default -> System.out.println("3. [КЛІЄНТ] Переглянути мої контракти");
+            case ADMIN -> System.out.println("3. Управління користувачами");
+            case GUARD -> System.out.println("3. Переглянути захищені об'єкти");
+            default -> System.out.println("3. Переглянути мої контракти");
         }
         
         System.out.println("4. Вихід з облікового запису");
@@ -148,8 +149,8 @@ public class MainUI {
 
         if (!newPassword.equals(confirmPassword)) {
             System.out.println("\n Паролі не співпадають!");
-        } else if (newPassword.length() < 6) {
-            System.out.println("\n Пароль повинен містити мінімум 6 символів!");
+        } else if (newPassword.length() < 8) {
+            System.out.println("\n Пароль повинен містити мінімум 8 символів!");
         } else {
             System.out.println("\n Пароль успішно змінений!");
         }
@@ -318,7 +319,6 @@ public class MainUI {
                         System.out.print("Тип об'єкту (Квартира/Офіс/Склад): ");
                         String type = scanner.nextLine().trim();
                         
-                        // Create object and link to contract
                         ProtectedObject obj = mainService.createProtectedObject(name, address, type);
                         mainService.requestContract(currentUser, obj);
                         System.out.println("Заявку створено!");

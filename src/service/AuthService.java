@@ -13,7 +13,7 @@ import user.User;
 import util.PasswordUtil;
 import util.Validator;
 
-public class AuthService {
+public class AuthService implements AuthenticationService {
     private final UserDAO userDAO;
 
     public AuthService() {

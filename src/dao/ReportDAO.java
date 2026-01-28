@@ -6,11 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import model.Report;
+import repository.ReportRepository;
 import util.JsonFileHandler;
 import util.SimpleJsonParser;
 import util.SimpleJsonParser.JsonObject;
 
-public class ReportDAO {
+public class ReportDAO implements ReportRepository {
     private static final String FILE_PATH = "data/reports.json";
     private final JsonFileHandler fileHandler;
 
@@ -18,12 +19,42 @@ public class ReportDAO {
         this.fileHandler = new JsonFileHandler();
     }
 
+    @Override
     public boolean create(Report report) throws IOException {
         List<Report> reports = findAll();
         reports.add(report);
         return saveAll(reports);
     }
 
+    public java.util.Optional<Report> findById(UUID id) throws IOException {
+        return findAll().stream()
+                .filter(r -> r.getId().equals(id))
+                .findFirst();
+    }
+
+    @Override
+    public boolean update(Report report) throws IOException {
+        List<Report> reports = findAll();
+        for (int i = 0; i < reports.size(); i++) {
+            if (reports.get(i).getId().equals(report.getId())) {
+                reports.set(i, report);
+                return saveAll(reports);
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean delete(UUID id) throws IOException {
+        List<Report> reports = findAll();
+        boolean removed = reports.removeIf(r -> r.getId().equals(id));
+        if (removed) {
+            return saveAll(reports);
+        }
+        return false;
+    }
+
+    @Override
     public List<Report> findAll() throws IOException {
         List<Report> reports = new ArrayList<>();
 

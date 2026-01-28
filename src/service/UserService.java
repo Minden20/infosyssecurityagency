@@ -7,11 +7,12 @@ import exception.ValidationException;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import repository.UserRepository;
 import user.User;
 import util.Validator;
 
 public class UserService {
-    private final UserDAO userDAO;
+    private final UserRepository userDAO;
 
     public UserService() {
         this.userDAO = new UserDAO();

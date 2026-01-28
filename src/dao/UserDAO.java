@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import repository.UserRepository;
 import user.Admin;
 import user.Client;
 import user.Guard;
@@ -13,7 +14,7 @@ import util.JsonFileHandler;
 import util.SimpleJsonParser;
 import util.SimpleJsonParser.JsonObject;
 
-public class UserDAO {
+public class UserDAO implements UserRepository {
     /**
      * Шлях до JSON файлу з даними користувачів.
      */
@@ -43,10 +44,11 @@ public class UserDAO {
      * @throws IOException якщо виникла помилка при роботі з файлом
      * @throws UserAlreadyExistsException 
      */
-    public boolean create(User user) throws IOException, UserAlreadyExistsException {
+    @Override
+    public boolean create(User user) throws IOException {
         List<User> users = findAll();
         if (users.stream().anyMatch(u -> u.getEmail().equalsIgnoreCase(user.getEmail()))) {
-            throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists.");
+            throw new IOException("User with email " + user.getEmail() + " already exists.");
         }
         users.add(user);
         return saveAll(users);
@@ -59,6 +61,7 @@ public class UserDAO {
      * @return користувач з вказаним email або null, якщо не знайдено
      * @throws IOException якщо виникла помилка при роботі з файлом
      */
+    @Override
     public User findByEmail(String email) throws IOException {
         List<User> users = findAll();
         for (User user : users) {
@@ -66,7 +69,13 @@ public class UserDAO {
                 return user;
             }
         }
-        return null;
+        return null; // Keep null here as per original design or change to Optional if needed, but keeping for backward compat for now
+    }
+
+    public java.util.Optional<User> findById(UUID id) throws IOException {
+        return findAll().stream()
+                .filter(u -> u.getId().equals(id))
+                .findFirst();
     }
 
     /**
@@ -75,6 +84,7 @@ public class UserDAO {
      * @return список всіх користувачів
      * @throws IOException якщо виникла помилка при роботі з файлом
      */
+    @Override
     public List<User> findAll() throws IOException {
         List<User> users = new ArrayList<>();
 
@@ -136,6 +146,7 @@ public class UserDAO {
      * @return true, якщо користувач успішно оновлений, false - інакше
      * @throws IOException якщо виникла помилка при роботі з файлом
      */
+    @Override
     public boolean update(User user) throws IOException {
         List<User> users = findAll();
         for (int i = 0; i < users.size(); i++) {
@@ -154,6 +165,7 @@ public class UserDAO {
      * @return true, якщо користувач успішно видалений, false - інакше
      * @throws IOException якщо виникла помилка при роботі з файлом
      */
+    @Override
     public boolean delete(UUID id) throws IOException {
         List<User> users = findAll();
         boolean removed = users.removeIf(user -> user.getId().equals(id));

@@ -2,6 +2,7 @@ package service;
 
 import dao.ContractDAO;
 import dao.ProtectedObjectDAO;
+import dao.ReportDAO;
 import dao.UserDAO;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -16,11 +17,13 @@ public class MainService {
     private final UserDAO userDAO;
     private final ContractDAO contractDAO;
     private final ProtectedObjectDAO protectedObjectDAO;
+    private final ReportDAO reportDAO;
 
     public MainService() {
-        this.userDAO = new UserDAO();
+        this.userDAO =  new UserDAO();
         this.contractDAO = new ContractDAO();
         this.protectedObjectDAO = new ProtectedObjectDAO();
+        this.reportDAO = new dao.ReportDAO();
     }
 
 
@@ -41,7 +44,6 @@ public class MainService {
         return false;
     }
 
-    private final dao.ReportDAO reportDAO = new dao.ReportDAO();
 
     public void createReport(User guard, String content) throws IOException {
         model.Report report = new model.Report(null, guard.getId(), content, null);

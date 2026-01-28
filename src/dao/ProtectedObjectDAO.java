@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import model.ProtectedObject;
+import repository.ProtectedObjectRepository;
 import util.JsonFileHandler;
 import util.SimpleJsonParser;
 import util.SimpleJsonParser.JsonObject;
 
-public class ProtectedObjectDAO {
+public class ProtectedObjectDAO implements ProtectedObjectRepository {
     private static final String FILE_PATH = "data/objects.json";
     private final JsonFileHandler fileHandler;
 
@@ -18,6 +19,7 @@ public class ProtectedObjectDAO {
         this.fileHandler = new JsonFileHandler();
     }
 
+    @Override
     public boolean create(ProtectedObject object) throws IOException {
         List<ProtectedObject> objects = findAll();
         objects.add(object);
@@ -30,6 +32,7 @@ public class ProtectedObjectDAO {
                 .findFirst();
     }
 
+    @Override
     public List<ProtectedObject> findAll() throws IOException {
         List<ProtectedObject> objects = new ArrayList<>();
 
@@ -59,6 +62,7 @@ public class ProtectedObjectDAO {
         return objects;
     }
 
+    @Override
     public boolean update(ProtectedObject object) throws IOException {
         List<ProtectedObject> objects = findAll();
         for (int i = 0; i < objects.size(); i++) {
@@ -70,6 +74,7 @@ public class ProtectedObjectDAO {
         return false;
     }
 
+    @Override
     public boolean delete(UUID id) throws IOException {
         List<ProtectedObject> objects = findAll();
         boolean removed = objects.removeIf(o -> o.getId().equals(id));
